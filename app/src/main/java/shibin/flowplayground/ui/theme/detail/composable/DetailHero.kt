@@ -82,7 +82,7 @@ fun DetailHero(
 
             Text(
                 text = ".${operator.name}()",
-                fontSize = 30.sp,
+                fontSize = 25.sp,
                 fontWeight = FontWeight.Black,
                 fontFamily = FontFamily.Monospace,
                 color = accent

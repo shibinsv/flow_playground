@@ -79,14 +79,19 @@ fun DetailScreen(
             modifier = Modifier.fillMaxSize(),
             contentPadding = PaddingValues(bottom = 48.dp)
         ) {
-            item {
-                DetailHero(
-                    operator = operator,
-                    accent = accent,
-                    onBack = onBack
-                )
+            stickyHeader {
+                Box(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .background(BgPrimary)
+                ) {
+                    DetailHero(
+                        operator = operator,
+                        accent = accent,
+                        onBack = onBack
+                    )
+                }
             }
-
             item { ImpactBanner(operator.impact, accent) }
             item { Spacer(Modifier.height(20.dp)) }
             item {

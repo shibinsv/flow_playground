@@ -1,5 +1,7 @@
 package shibin.flowplayground.di.repository
 
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.flow.*
 import shibin.flowplayground.data.FlowOperator
 import shibin.flowplayground.enums.DemoType
 import javax.inject.Inject
@@ -13,16 +15,14 @@ class FlowOperatorRepository @Inject constructor() {
             id = "map",
             name = "map",
             description = "Transforms each emitted value using a given function.",
-            impact = "Every emission is transformed. 1-to-1 relationship between input and output.",
-            codeSnippet = "...",
+            impact = "1-to-1 transformation.",
+            codeSnippet = """
+                flowOf(1, 2, 3)
+                    .map { it * 2 }
+                    .collect { println(it) }
+            """.trimIndent(),
             demoType = DemoType.MAP,
-            explanationSteps = listOf(
-                "Flow emits values: 1, 2, 3",
-                "Each value enters the map operator",
-                "Transformation is applied to each value",
-                "1 becomes 2, 2 becomes 4, 3 becomes 6",
-                "Final output is 2, 4, 6"
-            ),
+            explanationSteps = listOf("1 → 2", "2 → 4", "3 → 6"),
             exampleInput = listOf("1", "2", "3"),
             exampleOutput = listOf("2", "4", "6")
         ),
@@ -32,16 +32,14 @@ class FlowOperatorRepository @Inject constructor() {
             id = "filter",
             name = "filter",
             description = "Emits only values that satisfy the given predicate.",
-            impact = "Reduces emissions by dropping values.",
-            codeSnippet = "...",
+            impact = "Filters out unwanted values.",
+            codeSnippet = """
+                flowOf(1, 2, 3, 4, 5)
+                    .filter { it % 2 == 0 }
+                    .collect { println(it) }
+            """.trimIndent(),
             demoType = DemoType.FILTER,
-            explanationSteps = listOf(
-                "Flow emits values: 1, 2, 3, 4, 5",
-                "Each value is checked against a condition",
-                "Only even numbers pass the filter",
-                "Odd numbers are removed",
-                "Final output is 2 and 4"
-            ),
+            explanationSteps = listOf("Only even numbers pass"),
             exampleInput = listOf("1", "2", "3", "4", "5"),
             exampleOutput = listOf("2", "4")
         ),
@@ -52,17 +50,22 @@ class FlowOperatorRepository @Inject constructor() {
             name = "flatMapLatest",
             description = "Cancels previous flow when new value arrives.",
             impact = "Only latest flow is active.",
-            codeSnippet = "...",
+            codeSnippet = """
+                flowOf("A", "B", "C")
+                    .onEach { delay(100) }
+                    .flatMapLatest {
+                        flow {
+                            emit("Start ${'$'}it")
+                            delay(200)
+                            emit("End ${'$'}it")
+                        }
+                    }
+                    .collect { println(it) }
+            """.trimIndent(),
             demoType = DemoType.FLAT_MAP_LATEST,
-            explanationSteps = listOf(
-                "Flow emits values A, B, C",
-                "A starts a new inner flow",
-                "Before A finishes, B arrives and cancels A",
-                "B starts a new flow but gets cancelled by C",
-                "Only C completes and emits results"
-            ),
+            explanationSteps = listOf("Previous flow cancelled when new value comes"),
             exampleInput = listOf("A", "B", "C"),
-            exampleOutput = listOf("Result(C)")
+            exampleOutput = listOf("Start C", "End C")
         ),
 
         // 🔹 FLATMAP MERGE
@@ -70,18 +73,22 @@ class FlowOperatorRepository @Inject constructor() {
             id = "flatMapMerge",
             name = "flatMapMerge",
             description = "Runs multiple flows in parallel.",
-            impact = "All flows run concurrently.",
-            codeSnippet = "...",
+            impact = "Concurrent execution.",
+            codeSnippet = """
+                flowOf(1, 2, 3)
+                    .flatMapMerge {
+                        flow {
+                            emit("${'$'}it-start")
+                            delay(100)
+                            emit("${'$'}it-end")
+                        }
+                    }
+                    .collect { println(it) }
+            """.trimIndent(),
             demoType = DemoType.FLAT_MAP_MERGE,
-            explanationSteps = listOf(
-                "Flow emits values: 1, 2, 3",
-                "Each value starts its own inner flow",
-                "All inner flows run at the same time",
-                "Results arrive whenever ready",
-                "Order of output may vary"
-            ),
+            explanationSteps = listOf("All flows run concurrently"),
             exampleInput = listOf("1", "2", "3"),
-            exampleOutput = listOf("1a", "2a", "1b", "3a")
+            exampleOutput = listOf("1-start", "2-start", "3-start")
         ),
 
         // 🔹 DEBOUNCE
@@ -90,15 +97,21 @@ class FlowOperatorRepository @Inject constructor() {
             name = "debounce",
             description = "Emits only after delay with no new values.",
             impact = "Suppresses rapid emissions.",
-            codeSnippet = "...",
+            codeSnippet = """
+                flow {
+                    emit("h")
+                    delay(100)
+                    emit("he")
+                    delay(100)
+                    emit("hel")
+                    delay(400)
+                    emit("hello")
+                }
+                .debounce(300)
+                .collect { println(it) }
+            """.trimIndent(),
             demoType = DemoType.DEBOUNCE,
-            explanationSteps = listOf(
-                "User types: h, he, hel, hello",
-                "Each new input resets the timer",
-                "Debounce waits for a pause",
-                "Only the final stable value is emitted",
-                "Final output is hello"
-            ),
+            explanationSteps = listOf("Only emits after pause"),
             exampleInput = listOf("h", "he", "hel", "hello"),
             exampleOutput = listOf("hello")
         ),
@@ -109,15 +122,13 @@ class FlowOperatorRepository @Inject constructor() {
             name = "distinctUntilChanged",
             description = "Removes consecutive duplicates.",
             impact = "Avoids redundant emissions.",
-            codeSnippet = "...",
+            codeSnippet = """
+                flowOf(1, 1, 2, 2, 3)
+                    .distinctUntilChanged()
+                    .collect { println(it) }
+            """.trimIndent(),
             demoType = DemoType.DISTINCT_UNTIL_CHANGED,
-            explanationSteps = listOf(
-                "Flow emits: 1, 1, 2, 2, 3",
-                "Operator compares with previous value",
-                "Duplicate consecutive values are ignored",
-                "Only changes are emitted",
-                "Final output is 1, 2, 3"
-            ),
+            explanationSteps = listOf("Duplicates removed"),
             exampleInput = listOf("1", "1", "2", "2", "3"),
             exampleOutput = listOf("1", "2", "3")
         ),
@@ -127,16 +138,16 @@ class FlowOperatorRepository @Inject constructor() {
             id = "zip",
             name = "zip",
             description = "Pairs values from two flows.",
-            impact = "Waits for both flows.",
-            codeSnippet = "...",
+            impact = "Synchronizes emissions.",
+            codeSnippet = """
+                val flow1 = flowOf("A", "B", "C")
+                val flow2 = flowOf(1, 2, 3)
+
+                flow1.zip(flow2) { a, b -> "${'$'}a${'$'}b" }
+                    .collect { println(it) }
+            """.trimIndent(),
             demoType = DemoType.ZIP,
-            explanationSteps = listOf(
-                "Two flows emit values",
-                "First values are paired together",
-                "Second values are paired next",
-                "Stops when one flow ends",
-                "Output is paired values"
-            ),
+            explanationSteps = listOf("Pairs values one by one"),
             exampleInput = listOf("A+1", "B+2", "C+3"),
             exampleOutput = listOf("A1", "B2", "C3")
         ),
@@ -147,15 +158,15 @@ class FlowOperatorRepository @Inject constructor() {
             name = "combine",
             description = "Combines latest values from flows.",
             impact = "Reacts to every update.",
-            codeSnippet = "...",
+            codeSnippet = """
+                val flow1 = flowOf("A", "B")
+                val flow2 = flowOf(1, 2)
+
+                flow1.combine(flow2) { a, b -> "${'$'}a${'$'}b" }
+                    .collect { println(it) }
+            """.trimIndent(),
             demoType = DemoType.COMBINE,
-            explanationSteps = listOf(
-                "Two flows emit values independently",
-                "Latest value from both is combined",
-                "Whenever any flow updates, new result is emitted",
-                "Uses most recent values always",
-                "Produces more frequent updates than zip"
-            ),
+            explanationSteps = listOf("Uses latest values"),
             exampleInput = listOf("A,1 → A,2 → B,2"),
             exampleOutput = listOf("A1", "A2", "B2")
         ),
@@ -166,17 +177,23 @@ class FlowOperatorRepository @Inject constructor() {
             name = "buffer",
             description = "Adds buffer between producer and consumer.",
             impact = "Improves performance.",
-            codeSnippet = "...",
+            codeSnippet = """
+                flow {
+                    repeat(3) {
+                        delay(100)
+                        emit(it)
+                    }
+                }
+                .buffer()
+                .collect {
+                    delay(300)
+                    println(it)
+                }
+            """.trimIndent(),
             demoType = DemoType.BUFFER,
-            explanationSteps = listOf(
-                "Producer emits values quickly",
-                "Consumer processes slowly",
-                "Buffer stores intermediate values",
-                "Producer continues without waiting",
-                "Improves overall throughput"
-            ),
-            exampleInput = listOf("Fast: 1,2,3"),
-            exampleOutput = listOf("Buffered processing")
+            explanationSteps = listOf("Producer runs faster than consumer"),
+            exampleInput = listOf("1,2,3"),
+            exampleOutput = listOf("Buffered output")
         ),
 
         // 🔹 COLLECT LATEST
@@ -185,17 +202,18 @@ class FlowOperatorRepository @Inject constructor() {
             name = "collectLatest",
             description = "Cancels previous work on new value.",
             impact = "Only latest work completes.",
-            codeSnippet = "...",
+            codeSnippet = """
+                flowOf("A", "B", "C")
+                    .collectLatest {
+                        println("Start ${'$'}it")
+                        delay(200)
+                        println("End ${'$'}it")
+                    }
+            """.trimIndent(),
             demoType = DemoType.COLLECT_LATEST,
-            explanationSteps = listOf(
-                "Flow emits values: A, B, C",
-                "Processing starts for A",
-                "B arrives and cancels A",
-                "C arrives and cancels B",
-                "Only C completes processing"
-            ),
+            explanationSteps = listOf("Previous work cancelled"),
             exampleInput = listOf("A", "B", "C"),
-            exampleOutput = listOf("Processed(C)")
+            exampleOutput = listOf("Only C completes")
         )
     )
 
