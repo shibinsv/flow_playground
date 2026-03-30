@@ -40,7 +40,7 @@ fun HomeHeaderView() {
                     text = "Flow", style = TextStyle(
                         fontSize = 42.sp,
                         fontWeight = FontWeight.Black,
-                        color = Color(0xFF6C63FF),
+                        color = Color.White,
                         letterSpacing = (-1).sp
                     )
                 )

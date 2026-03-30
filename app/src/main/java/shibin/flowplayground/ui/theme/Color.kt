@@ -23,16 +23,14 @@ val TextCode = Color(0xFFE6EDF3)
 
 fun operatorAccentColor(index: Int): Color {
     val colors = listOf(
-        Color(0xFF6C63FF),
-        Color(0xFF00D4AA),
-        Color(0xFFFF6B6B),
-        Color(0xFFFFB347),
-        Color(0xFF4ECDC4),
-        Color(0xFFFF6B9D),
-        Color(0xFF45B7D1),
-        Color(0xFF96CEB4),
-        Color(0xFFDDA0DD),
-        Color(0xFFFF8C69),
+        Color(0xFF25631B), // strong blue
+        Color(0xFFDC2626), // deep red
+        Color(0xFF7C3AED), // rich purple
+        Color(0xFFD97706), // amber/orange
+        Color(0xFF059669), // deep green (NOT mint)
+        Color(0xFFDB2777), // pink-magenta
+        Color(0xFF0891B2), // cyan (not minty)
+        Color(0xFF4B5563)  // neutral grey
     )
     return colors[index % colors.size]
 }
